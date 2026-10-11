@@ -1,0 +1,53 @@
+group = rootProject.group
+version = "${rootProject.mod_version}-${project.name}"
+base { archivesName = 'parry' }
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(project.name.endsWith('1.20.1') ? 17 : 21)
+    withSourcesJar()
+}
+sourceSets.main.java.srcDirs += [rootProject.file('common/src/main/java'), rootProject.file("common-${minecraftVersion}/src/main/java")]
+// Metadata is generated separately because each target has its own loader and pack format.
+sourceSets.main.resources.srcDir layout.buildDirectory.dir('generated/metadata')
+tasks.register('generateMetadata') {
+    def output = layout.buildDirectory.dir('generated/metadata')
+    inputs.property 'version', project.version.toString()
+    inputs.property 'minecraftVersion', minecraftVersion
+    inputs.dir file('metadata')
+    inputs.file rootProject.file('src/main/resources/parry.mixins.json')
+    outputs.dir output
+    doLast {
+        def directory = output.get().asFile
+        directory.mkdirs()
+        new File(directory, 'pack.mcmeta').text = groovy.json.JsonOutput.toJson([pack: [pack_format: minecraftVersion == '1.20.1' ? 15 : 34, description: "Parry resources for Minecraft ${minecraftVersion}"]])
+        def mixins = new groovy.json.JsonSlurper().parse(rootProject.file('src/main/resources/parry.mixins.json'))
+        mixins.compatibilityLevel = minecraftVersion == '1.20.1' ? 'JAVA_17' : 'JAVA_21'
+        new File(directory, 'parry.mixins.json').text = groovy.json.JsonOutput.toJson(mixins)
+        def template = file('metadata').listFiles().find { it.name.endsWith('.json') || it.name.endsWith('.toml') }
+        def target = new File(directory, template.name == 'mods.toml' ? 'META-INF/mods.toml' : template.name)
+        target.parentFile.mkdirs()
+        target.text = template.getText('UTF-8').replace('@VERSION@', project.version.toString())
+    }
+}
+tasks.named('processResources') {
+    dependsOn 'generateMetadata'
+    inputs.property 'animationDirectory', minecraftVersion == '1.20.1' ? 'player_animation' : 'player_animations'
+    from(rootProject.file('src/main/resources/assets')) {
+        into 'assets'
+        eachFile { if (minecraftVersion == '1.20.1') path = path.replace('player_animations', 'player_animation') }
+    }
+}
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+tasks.named('jar') { from(rootProject.files('LICENSE', 'NOTICE.md')) { into 'META-INF' } }
+tasks.named('sourcesJar') {
+    dependsOn 'generateMetadata'
+    inputs.property 'animationDirectory', minecraftVersion == '1.20.1' ? 'player_animation' : 'player_animations'
+    from(rootProject.file('src/main/resources/assets')) {
+        into 'assets'
+        eachFile { if (minecraftVersion == '1.20.1') path = path.replace('player_animations', 'player_animation') }
+    }
+    from(rootProject.files('LICENSE', 'NOTICE.md')) { into 'META-INF' }
+}
+repositories {
+    mavenCentral()
+    maven { url = 'https://api.modrinth.com/maven' }
+}

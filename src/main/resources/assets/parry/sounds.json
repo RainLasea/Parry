@@ -1,0 +1,18 @@
+{
+  "block": {
+    "sounds": [
+      {
+        "name": "parry:block",
+        "stream": false
+      }
+    ]
+  },
+  "parry_sound": {
+    "sounds": [
+      {
+        "name": "parry:parry_sound",
+        "stream": false
+      }
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+plugins {
+    id 'java-library'
+    id 'net.fabricmc.fabric-loom-remap' version '1.15.5'
+}
+ext.minecraftVersion = '1.21.1'
+apply from: rootProject.file('gradle/port.gradle')
+sourceSets.main.java.srcDir rootProject.file('fabric-common/src/main/java')
+loom { mods { parry { sourceSet sourceSets.main } } }
+dependencies {
+    implementation 'com.electronwill.night-config:toml:3.8.3'
+    include 'com.electronwill.night-config:toml:3.8.3'
+    include 'com.electronwill.night-config:core:3.8.3'
+
+    minecraft 'com.mojang:minecraft:1.21.1'
+    mappings loom.officialMojangMappings()
+    modImplementation 'net.fabricmc:fabric-loader:0.19.3'
+    modImplementation 'net.fabricmc.fabric-api:fabric-api:0.116.6+1.21.1'
+    modCompileOnly 'maven.modrinth:playeranimator:CkedfDp3'
+    modCompileOnly 'maven.modrinth:punchy-fpa:vQFe6AaG'
+    modCompileOnly 'maven.modrinth:cameraoverhaul:B9tByLOZ'
+    if (providers.gradleProperty('withPlayerAnimator').getOrElse('false').toBoolean()) modRuntimeOnly 'maven.modrinth:playeranimator:CkedfDp3'
+    if (providers.gradleProperty('withPunchy').getOrElse('false').toBoolean()) modRuntimeOnly 'maven.modrinth:punchy-fpa:vQFe6AaG'
+    if (providers.gradleProperty('withCameraOverhaul').getOrElse('false').toBoolean()) {
+        modRuntimeOnly 'maven.modrinth:cameraoverhaul:B9tByLOZ'
+        modRuntimeOnly 'maven.modrinth:cloth-config:15.0.140+fabric'
+    }
+}
+
+sourceSets.main.java.srcDir rootProject.file('ports-common/src/main/java')

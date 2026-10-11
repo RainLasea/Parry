@@ -1,0 +1,30 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev.legacyforge'
+}
+ext.minecraftVersion = '1.20.1'
+apply from: rootProject.file('gradle/port.gradle')
+legacyForge {
+    version = '1.20.1-47.3.0'
+    runs {
+        client { client() }
+        server { server(); programArgument '--nogui' }
+    }
+    mods { parry { sourceSet sourceSets.main } }
+}
+dependencies {
+    modCompileOnly 'maven.modrinth:playeranimator:xe2EVE6q'
+    modCompileOnly 'maven.modrinth:punchy-fpa:YUkGOyu4'
+    modCompileOnly 'maven.modrinth:cameraoverhaul:Apl3bbtA'
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    if (providers.gradleProperty('withPlayerAnimator').getOrElse('false').toBoolean()) modRuntimeOnly 'maven.modrinth:playeranimator:xe2EVE6q'
+    if (providers.gradleProperty('withPunchy').getOrElse('false').toBoolean()) clientAdditionalRuntimeClasspath 'maven.modrinth:punchy-fpa:YUkGOyu4'
+    if (providers.gradleProperty('withCameraOverhaul').getOrElse('false').toBoolean()) {
+        clientAdditionalRuntimeClasspath 'maven.modrinth:cameraoverhaul:Apl3bbtA'
+        clientAdditionalRuntimeClasspath 'maven.modrinth:cloth-config:11.1.136+forge'
+    }
+}
+mixin { add sourceSets.main, 'parry.refmap.json'; config 'parry.mixins.json' }
+tasks.named('jar') { manifest.attributes('MixinConfigs': 'parry.mixins.json') }
+
+sourceSets.main.java.srcDir rootProject.file('ports-common/src/main/java')

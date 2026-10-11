@@ -1,0 +1,9 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven { url = 'https://maven.neoforged.net/releases' }
+        maven { url = 'https://maven.fabricmc.net/' }
+    }
+}
+rootProject.name = 'Parry'
+include 'forge-1.20.1', 'fabric-1.20.1', 'fabric-1.21.1'
