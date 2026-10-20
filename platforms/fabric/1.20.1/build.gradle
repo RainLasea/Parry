@@ -1,0 +1,17 @@
+plugins {
+    id 'java-library'
+    alias(libs.plugins.fabric.loom)
+}
+
+ext {
+    minecraftVersion = '1.20.1'
+    javaVersion = 17
+    sharedSources = ['gameplay', 'loaders/fabric']
+    fabricApiDependency = libs.fabric.api.mc1201
+    playerAnimatorDependency = libs.playeranimator.fabric.mc1201
+    punchyDependency = libs.punchy.fabric.mc1201
+    cameraOverhaulDependency = libs.cameraoverhaul.fabric.mc1201
+    clothConfigDependency = libs.cloth.fabric.mc1201
+}
+
+apply from: rootProject.file('gradle/fabric-common.gradle')

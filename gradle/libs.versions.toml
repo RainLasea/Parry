@@ -1,0 +1,44 @@
+[versions]
+moddev = "2.0.144"
+loom = "1.15.5"
+neoforge = "21.1.249"
+forge = "1.20.1-47.3.0"
+fabric-loader = "0.19.3"
+nightconfig = "3.8.3"
+junit = "5.11.4"
+curios-neoforge = "9.5.1+1.21.1"
+curios-forge = "5.14.1+1.20.1"
+
+[plugins]
+neoforge = { id = "net.neoforged.moddev", version.ref = "moddev" }
+forge = { id = "net.neoforged.moddev.legacyforge", version.ref = "moddev" }
+fabric-loom = { id = "net.fabricmc.fabric-loom-remap", version.ref = "loom" }
+
+[libraries]
+fabric-loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric-loader" }
+fabric-api-mc1201 = { module = "net.fabricmc.fabric-api:fabric-api", version = "0.92.6+1.20.1" }
+fabric-api-mc1211 = { module = "net.fabricmc.fabric-api:fabric-api", version = "0.116.6+1.21.1" }
+nightconfig-toml = { module = "com.electronwill.night-config:toml", version.ref = "nightconfig" }
+nightconfig-core = { module = "com.electronwill.night-config:core", version.ref = "nightconfig" }
+mixin-processor = { module = "org.spongepowered:mixin", version = "0.8.5" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+junit-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "1.11.4" }
+
+# Modrinth version IDs distinguish releases that share a version number across loaders.
+playeranimator-forge-mc1201 = { module = "maven.modrinth:playeranimator", version = "xe2EVE6q" }
+playeranimator-fabric-mc1201 = { module = "maven.modrinth:playeranimator", version = "yDqYTUaf" }
+playeranimator-fabric-mc1211 = { module = "maven.modrinth:playeranimator", version = "CkedfDp3" }
+playeranimator-neoforge-mc1211 = { module = "maven.modrinth:playeranimator", version = "2.0.4+1.21.1-forge" }
+punchy-forge-mc1201 = { module = "maven.modrinth:punchy-fpa", version = "YUkGOyu4" }
+punchy-fabric-mc1201 = { module = "maven.modrinth:punchy-fpa", version = "svMK7vMp" }
+punchy-fabric-mc1211 = { module = "maven.modrinth:punchy-fpa", version = "vQFe6AaG" }
+punchy-neoforge-mc1211 = { module = "maven.modrinth:punchy-fpa", version = "luK5HVTT" }
+cameraoverhaul-forge-mc1201 = { module = "maven.modrinth:cameraoverhaul", version = "Apl3bbtA" }
+cameraoverhaul-fabric-mc1201 = { module = "maven.modrinth:cameraoverhaul", version = "ULeTXsvh" }
+cameraoverhaul-fabric-mc1211 = { module = "maven.modrinth:cameraoverhaul", version = "B9tByLOZ" }
+cameraoverhaul-neoforge-mc1211 = { module = "maven.modrinth:cameraoverhaul", version = "2.1.2-neoforge+mc.1.21-1.21.1" }
+cloth-forge-mc1201 = { module = "maven.modrinth:cloth-config", version = "11.1.136+forge" }
+cloth-fabric-mc1201 = { module = "maven.modrinth:cloth-config", version = "11.1.136+fabric" }
+cloth-fabric-mc1211 = { module = "maven.modrinth:cloth-config", version = "15.0.140+fabric" }
+cloth-neoforge-mc1211 = { module = "maven.modrinth:cloth-config", version = "15.0.140+neoforge" }
+neoorigins = { module = "com.cyberday1:neoorigins", version = "2.2.29" }

@@ -1,0 +1,29 @@
+// Version-specific dependency providers are declared by the two Fabric targets.
+apply from: rootProject.file('gradle/mod-common.gradle')
+
+loom { mods { parry { sourceSet sourceSets.main } } }
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraftVersion}"
+    mappings loom.officialMojangMappings()
+    modImplementation libs.fabric.loader
+    modImplementation fabricApiDependency
+
+    implementation libs.nightconfig.toml
+    include libs.nightconfig.toml
+    include libs.nightconfig.core
+
+    modCompileOnly playerAnimatorDependency
+    modCompileOnly punchyDependency
+    modCompileOnly cameraOverhaulDependency
+    if (providers.gradleProperty('withPlayerAnimator').getOrElse('false').toBoolean()) {
+        modRuntimeOnly playerAnimatorDependency
+    }
+    if (providers.gradleProperty('withPunchy').getOrElse('false').toBoolean()) {
+        modRuntimeOnly punchyDependency
+    }
+    if (providers.gradleProperty('withCameraOverhaul').getOrElse('false').toBoolean()) {
+        modRuntimeOnly cameraOverhaulDependency
+        modRuntimeOnly clothConfigDependency
+    }
+}

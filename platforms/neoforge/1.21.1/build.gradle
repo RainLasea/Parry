@@ -1,0 +1,75 @@
+plugins {
+    id 'java-library'
+    alias(libs.plugins.neoforge)
+}
+
+ext {
+    minecraftVersion = '1.21.1'
+    javaVersion = 21
+    sharedSources = ['compat/curios']
+}
+
+apply from: rootProject.file('gradle/mod-common.gradle')
+
+neoForge {
+    version = providers.gradleProperty('neo_version').getOrElse(libs.versions.neoforge.get())
+    mods { parry { sourceSet sourceSets.main } }
+    unitTest {
+        enable()
+        testedMod = mods.parry
+    }
+    runs {
+        client { client(); loadedMods = [mods.parry] }
+        server { server(); programArgument '--nogui'; loadedMods = [mods.parry] }
+    }
+}
+
+repositories {
+    maven { url = 'https://maven.theillusivec4.top/' }
+    // NeoOrigins releases have no POM; resolve the pinned GitHub release asset through Ivy.
+    ivy {
+        url = 'https://github.com/CyberDay1/NeoOrigins/releases/download'
+        patternLayout { artifact 'v[revision]/[artifact]-[revision]+1.21.1.[ext]' }
+        metadataSources { artifact() }
+        content { includeModule 'com.cyberday1', 'neoorigins' }
+    }
+}
+
+def devDependency = { library, propertyName ->
+    def dependency = library.get()
+    def selectedVersion = providers.gradleProperty(propertyName).getOrElse(dependency.versionConstraint.requiredVersion)
+    "${dependency.module}:${selectedVersion}"
+}
+def neoOriginsDependency = devDependency(libs.neoorigins, 'neoOriginsVersion')
+def cameraOverhaulDependency = devDependency(libs.cameraoverhaul.neoforge.mc1211, 'cameraOverhaulVersion')
+def playerAnimatorDependency = devDependency(libs.playeranimator.neoforge.mc1211, 'playerAnimatorVersion')
+def punchyDependency = devDependency(libs.punchy.neoforge.mc1211, 'punchyVersion')
+def curiosDependency = "top.theillusivec4.curios:curios-neoforge:${providers.gradleProperty('curiosNeoForgeVersion').getOrElse(libs.versions.curios.neoforge.get())}"
+
+dependencies {
+    testImplementation libs.junit.jupiter
+    testRuntimeOnly libs.junit.launcher
+    compileOnly "${curiosDependency}:api"
+    compileOnly neoOriginsDependency
+    compileOnly cameraOverhaulDependency
+    compileOnly playerAnimatorDependency
+    compileOnly punchyDependency
+    if (providers.gradleProperty('withCurios').getOrElse('false').toBoolean()) {
+        runtimeOnly curiosDependency
+    }
+    if (providers.gradleProperty('withNeoOrigins').getOrElse('false').toBoolean()) {
+        runtimeOnly neoOriginsDependency
+    }
+    if (providers.gradleProperty('withCameraOverhaul').getOrElse('false').toBoolean()) {
+        runtimeOnly cameraOverhaulDependency
+        runtimeOnly libs.cloth.neoforge.mc1211
+    }
+    if (providers.gradleProperty('withPlayerAnimator').getOrElse('false').toBoolean()) {
+        runtimeOnly playerAnimatorDependency
+    }
+    if (providers.gradleProperty('withPunchy').getOrElse('false').toBoolean()) {
+        clientAdditionalRuntimeClasspath punchyDependency
+    }
+}
+
+tasks.named('test', Test) { useJUnitPlatform() }

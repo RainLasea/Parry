@@ -6,7 +6,7 @@ This project is licensed under the GNU Lesser General Public License version 3 o
 
 The implementation includes server-authoritative networking, transient data attachments, tick-based timing, optional Player Animator 2.x integration, optional CameraOverhaul parry camera feedback.
 
-Shared source code is in `common`, `common-1.20.1`, and `common-1.21.1`. Loader adapters are in `src/main/java` (NeoForge), `forge-1.20.1`, `fabric-common`, and the two Fabric target directories. The other ports share session and gameplay handling in `ports-common`.
+Shared source code and runtime assets are in `shared/`, grouped into common code, Minecraft version adapters, loader helpers, gameplay handlers, and optional integrations. Each installable target has its own standard source tree under `platforms/<loader>/<minecraft-version>/`. Build conventions and dependency versions are maintained in `gradle/`.
 
 ## Third-Party Dependencies
 

@@ -1,0 +1,50 @@
+// Applied by each target after declaring minecraftVersion, javaVersion and sharedSources.
+base { archivesName = rootProject.mod_id }
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(javaVersion)
+    withSourcesJar()
+}
+
+sourceSets.main {
+    java.srcDirs += [
+        rootProject.file('shared/common/src/main/java'),
+        rootProject.file("shared/versions/${minecraftVersion}/src/main/java")
+    ] + sharedSources.collect { rootProject.file("shared/${it}/src/main/java") }
+    resources.srcDir rootProject.file('shared/common/src/main/resources')
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://api.modrinth.com/maven' }
+}
+
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+
+tasks.named('processResources', ProcessResources) {
+    inputs.property 'modVersion', project.version.toString()
+    inputs.property 'javaVersion', javaVersion
+    inputs.property 'minecraftVersion', minecraftVersion
+    filteringCharset = 'UTF-8'
+    filesMatching(['fabric.mod.json', 'META-INF/mods.toml', 'META-INF/neoforge.mods.toml']) {
+        expand version: project.version.toString()
+    }
+    filesMatching('parry.mixins.json') {
+        filter { line -> line.replace('JAVA_21', "JAVA_${javaVersion}") }
+    }
+    eachFile {
+        if (minecraftVersion == '1.20.1') path = path.replace('player_animations/', 'player_animation/')
+    }
+}
+
+tasks.named('jar', Jar) {
+    from(rootProject.files('LICENSE', 'NOTICE.md')) { into 'META-INF' }
+}
+
+tasks.named('sourcesJar', Jar) {
+    inputs.property 'minecraftVersion', minecraftVersion
+    eachFile {
+        if (minecraftVersion == '1.20.1') path = path.replace('player_animations/', 'player_animation/')
+    }
+    from(rootProject.files('LICENSE', 'NOTICE.md')) { into 'META-INF' }
+}

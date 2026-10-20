@@ -6,4 +6,14 @@ pluginManagement {
     }
 }
 rootProject.name = 'Parry'
-include 'forge-1.20.1', 'fabric-1.20.1', 'fabric-1.21.1'
+
+// Keep short task paths while grouping physical modules by loader and Minecraft version.
+[
+    'forge-1.20.1': 'platforms/forge/1.20.1',
+    'fabric-1.20.1': 'platforms/fabric/1.20.1',
+    'fabric-1.21.1': 'platforms/fabric/1.21.1',
+    'neoforge-1.21.1': 'platforms/neoforge/1.21.1'
+].each { name, directory ->
+    include name
+    project(":${name}").projectDir = file(directory)
+}

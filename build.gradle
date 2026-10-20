@@ -1,100 +1,55 @@
 plugins {
-    id 'java-library'
-    id 'net.neoforged.moddev' version '2.0.144'
+    id 'base'
+    alias(libs.plugins.neoforge) apply false
+    alias(libs.plugins.forge) apply false
+    alias(libs.plugins.fabric.loom) apply false
 }
 
-version = "${mod_version}-neoforge-1.21.1"
-group = 'net.abysslasea.parry'
-base { archivesName = mod_id }
-java {
-    toolchain.languageVersion = JavaLanguageVersion.of(21)
-    withSourcesJar()
+group = providers.gradleProperty('mod_group').get()
+version = providers.gradleProperty('mod_version').get()
+defaultTasks 'build'
+
+def targets = subprojects.collect { it.name }
+
+subprojects {
+    group = rootProject.group
+    version = "${rootProject.version}-${name}"
+    layout.buildDirectory = rootProject.layout.buildDirectory.dir("platforms/${name}")
 }
 
-repositories {
-    mavenCentral()
-    maven { url = 'https://api.modrinth.com/maven' }
-
-    // NeoOrigins release assets have no POM, so resolve the pinned JAR through Ivy.
-    ivy {
-        url = 'https://github.com/CyberDay1/NeoOrigins/releases/download'
-        patternLayout { artifact 'v[revision]/[artifact]-[revision]+1.21.1.[ext]' }
-        metadataSources { artifact() }
-        content { includeModule 'com.cyberday1', 'neoorigins' }
+['assemble', 'check', 'build'].each { lifecycle ->
+    tasks.named(lifecycle) {
+        dependsOn targets.collect { ":${it}:${lifecycle}" }
     }
-}
-
-sourceSets {
-    main.java.srcDirs += ['common/src/main/java', 'common-1.21.1/src/main/java']
-}
-
-neoForge {
-    version = project.neo_version
-    mods {
-        parry { sourceSet sourceSets.main }
-    }
-    runs {
-        client {
-            client()
-            loadedMods = [mods.parry]
-        }
-        server {
-            server()
-            programArgument '--nogui'
-            loadedMods = [mods.parry]
-        }
-    }
-}
-
-// Override development dependencies with -P...Version=... .
-def neoOriginsDependency = "com.cyberday1:neoorigins:${providers.gradleProperty('neoOriginsVersion').getOrElse('2.2.29')}"
-def cameraOverhaulDependency = "maven.modrinth:cameraoverhaul:${providers.gradleProperty('cameraOverhaulVersion').getOrElse('2.1.2-neoforge+mc.1.21-1.21.1')}"
-def playerAnimatorDependency = "maven.modrinth:playeranimator:${providers.gradleProperty('playerAnimatorVersion').getOrElse('2.0.4+1.21.1-forge')}"
-// A Modrinth version ID avoids ambiguity between loaders with the same version number.
-def punchyDependency = "maven.modrinth:punchy-fpa:${providers.gradleProperty('punchyVersion').getOrElse('luK5HVTT')}"
-
-dependencies {
-    compileOnly neoOriginsDependency
-    if (providers.gradleProperty('withNeoOrigins').getOrElse('false').toBoolean()) {
-        runtimeOnly neoOriginsDependency
-    }
-    compileOnly cameraOverhaulDependency
-    if (providers.gradleProperty('withCameraOverhaul').getOrElse('false').toBoolean()) {
-        runtimeOnly cameraOverhaulDependency
-        runtimeOnly 'maven.modrinth:cloth-config:15.0.140+neoforge'
-    }
-    compileOnly playerAnimatorDependency
-    if (providers.gradleProperty('withPlayerAnimator').getOrElse('false').toBoolean()) {
-        runtimeOnly playerAnimatorDependency
-    }
-    compileOnly punchyDependency
-    if (providers.gradleProperty('withPunchy').getOrElse('false').toBoolean()) {
-        clientAdditionalRuntimeClasspath punchyDependency
-    }
-}
-
-tasks.named('jar', Jar) { from(['LICENSE', 'NOTICE.md']) { into 'META-INF' } }
-tasks.named('sourcesJar', Jar) { from(['LICENSE', 'NOTICE.md']) { into 'META-INF' } }
-
-tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
-tasks.named('processResources', ProcessResources) {
-    def metadata = [mod_version: project.version]
-    inputs.properties metadata
-    filesMatching('META-INF/neoforge.mods.toml') { expand metadata }
 }
 
 tasks.register('buildAll') {
     group = 'build'
-    description = 'Build all four Minecraft/loader targets.'
-    dependsOn tasks.named('build'), ':forge-1.20.1:build', ':fabric-1.20.1:build', ':fabric-1.21.1:build'
+    description = 'Build and test every supported Minecraft/loader target.'
+    dependsOn tasks.named('build')
 }
+
 tasks.register('collectJars', Sync) {
     group = 'build'
-    description = 'Build and collect the four installable JARs in build/releases.'
-    dependsOn tasks.named('buildAll')
+    description = 'Build all targets and collect installable JARs in build/releases.'
+    dependsOn tasks.named('build')
     into layout.buildDirectory.dir('releases')
-    from(tasks.named('jar'))
-    ['forge-1.20.1', 'fabric-1.20.1', 'fabric-1.21.1'].each { target ->
-        from(project(":${target}").layout.buildDirectory.dir('libs')) { include "parry-${rootProject.mod_version}-${target}.jar" }
+    targets.each { target ->
+        from(layout.buildDirectory.file("platforms/${target}/libs/${mod_id}-${version}-${target}.jar"))
+    }
+}
+
+tasks.register('test') {
+    group = 'verification'
+    description = 'Run tests for all supported targets.'
+    dependsOn targets.collect { ":${it}:test" }
+}
+
+// Preserve the former root commands for the default NeoForge development target.
+['runClient', 'runServer'].each { run ->
+    tasks.register(run) {
+        group = 'application'
+        description = "Run the NeoForge 1.21.1 ${run == 'runClient' ? 'client' : 'server'}."
+        dependsOn ":neoforge-1.21.1:${run}"
     }
 }

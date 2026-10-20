@@ -1,0 +1,53 @@
+plugins {
+    id 'java-library'
+    alias(libs.plugins.forge)
+}
+
+ext {
+    minecraftVersion = '1.20.1'
+    javaVersion = 17
+    sharedSources = ['gameplay', 'compat/curios']
+}
+
+apply from: rootProject.file('gradle/mod-common.gradle')
+
+legacyForge {
+    version = libs.versions.forge.get()
+    runs {
+        client { client() }
+        server { server(); programArgument '--nogui' }
+    }
+    mods { parry { sourceSet sourceSets.main } }
+}
+
+repositories { maven { url = 'https://maven.theillusivec4.top/' } }
+
+def curiosDependency = "top.theillusivec4.curios:curios-forge:${providers.gradleProperty('curiosForgeVersion').getOrElse(libs.versions.curios.forge.get())}"
+
+dependencies {
+    modCompileOnly "${curiosDependency}:api"
+    if (providers.gradleProperty('withCurios').getOrElse('false').toBoolean()) {
+        modRuntimeOnly curiosDependency
+    }
+    modCompileOnly libs.playeranimator.forge.mc1201
+    modCompileOnly libs.punchy.forge.mc1201
+    modCompileOnly libs.cameraoverhaul.forge.mc1201
+    annotationProcessor "${libs.mixin.processor.get()}:processor"
+    if (providers.gradleProperty('withPlayerAnimator').getOrElse('false').toBoolean()) {
+        modRuntimeOnly libs.playeranimator.forge.mc1201
+    }
+    if (providers.gradleProperty('withPunchy').getOrElse('false').toBoolean()) {
+        clientAdditionalRuntimeClasspath libs.punchy.forge.mc1201
+    }
+    if (providers.gradleProperty('withCameraOverhaul').getOrElse('false').toBoolean()) {
+        clientAdditionalRuntimeClasspath libs.cameraoverhaul.forge.mc1201
+        clientAdditionalRuntimeClasspath libs.cloth.forge.mc1201
+    }
+}
+
+mixin {
+    add sourceSets.main, 'parry.refmap.json'
+    config 'parry.mixins.json'
+}
+
+tasks.named('jar', Jar) { manifest.attributes('MixinConfigs': 'parry.mixins.json') }

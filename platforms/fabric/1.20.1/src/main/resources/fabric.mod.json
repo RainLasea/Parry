@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "id": "parry",
+  "version": "${version}",
+  "name": "Parry",
+  "description": "Server-authoritative parrying with optional animations and camera feedback.",
+  "authors": [
+    "AbyssLasea"
+  ],
+  "license": "LGPL-3.0-only",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "net.abysslasea.parry.ParryMod"
+    ],
+    "client": [
+      "net.abysslasea.parry.client.ParryClient"
+    ]
+  },
+  "mixins": [
+    "parry.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "fabric-api": "*",
+    "minecraft": "1.20.1",
+    "java": ">=17"
+  },
+  "suggests": {
+    "punchy": ">=2.4 <3",
+    "cameraoverhaul": ">=2 <3",
+    "player-animator": "*"
+  },
+  "breaks": {
+    "punchy": [
+      "<2.4",
+      ">=3"
+    ],
+    "cameraoverhaul": [
+      "<2",
+      ">=3"
+    ],
+    "player-animator": [
+      "<1.0.2-rc1",
+      ">=2"
+    ]
+  }
+}
