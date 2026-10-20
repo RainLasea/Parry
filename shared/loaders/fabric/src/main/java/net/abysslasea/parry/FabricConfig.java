@@ -17,6 +17,11 @@ public final class FabricConfig {
             @SuppressWarnings("unchecked") T result = (T) Double.valueOf(number.doubleValue());
             return result;
         }
+        if (fallback instanceof Integer) {
+            if (!(raw instanceof Number number)) return fallback;
+            @SuppressWarnings("unchecked") T result = (T) Integer.valueOf(number.intValue());
+            return result;
+        }
         if (!fallback.getClass().isInstance(raw)) return fallback;
         @SuppressWarnings("unchecked") T result = (T) raw;
         return result;
@@ -40,4 +45,5 @@ public final class FabricConfig {
         public void set(T value) { this.value = value; }
     }
     public static double clamp(double value, double min, double max) { return Math.max(min, Math.min(max, value)); }
+    public static int clamp(int value, int min, int max) { return Math.max(min, Math.min(max, value)); }
 }
