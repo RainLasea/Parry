@@ -33,7 +33,7 @@ public final class ParryMod implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTING.register(server -> { ParryEvents.clear(); ParryConfig.load(server); });
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> ParryEvents.clear());
         ServerTickEvents.END_SERVER_TICK.register(server -> ParryEvents.tick());
-        ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) -> !(entity instanceof ServerPlayer player) || !ParryEvents.incomingDamage(player, source));
+        ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) -> !(entity instanceof ServerPlayer player) || !ParryEvents.incomingDamage(player, source, amount));
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> ParryEvents.reset(handler.player));
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> ParryEvents.reset(handler.player));
         ServerPlayerEvents.COPY_FROM.register((oldPlayer, newPlayer, alive) -> ParryEvents.copy(oldPlayer, newPlayer, alive));

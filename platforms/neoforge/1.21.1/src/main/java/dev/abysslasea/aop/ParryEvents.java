@@ -15,6 +15,7 @@ import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 public final class ParryEvents {
@@ -33,7 +34,7 @@ public final class ParryEvents {
         // handles its animation; echoing a swing there makes Punchy queue an ordinary attack.
         player.swing(InteractionHand.MAIN_HAND, false);
         player.serverLevel().playSound(null, player.blockPosition(), ParryMod.BLOCK_SOUND.get(),
-                SoundSource.PLAYERS, 1.0F,
+                SoundSource.PLAYERS, 0.9F + player.serverLevel().random.nextFloat() * 0.1F,
                 0.85F + player.serverLevel().random.nextFloat() * 0.3F);
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new ParryNetwork.Animation(player.getId()));
     }
@@ -41,19 +42,41 @@ public final class ParryEvents {
     @SubscribeEvent
     public static void incomingDamage(LivingIncomingDamageEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player) || player instanceof FakePlayer) return;
+        if (ParryPendingDamage.isReplaying(player)) return;
         // Void damage must remain lethal even while a parry window is open.
         if (event.getSource().is(DamageTypes.FELL_OUT_OF_WORLD)) return;
+        if (ParryPendingDamage.queue(player, event.getSource(), event.getOriginalAmount())) {
+            event.setCanceled(true);
+            return;
+        }
         // Recheck permissions so a class change cannot preserve an old window's access.
         if (!canParry(player)) return;
 
         var state = player.getData(ParryMod.PARRY_STATE);
         if (!state.isActive()) return;
+        var modifiers = resolveAccessories(player).modifiers();
+        if (!modifiers.canBlock(event.getSource())) return;
+        var target = ParryFacing.viewTarget(event.getSource());
+        if (target == null) {
+            if (completeParry(player, state, event.getSource())) event.setCanceled(true);
+            return;
+        }
+        if (ParryPendingDamage.request(player, state, event.getSource(), event.getOriginalAmount(),
+                target,
+                () -> player.getData(ParryMod.PARRY_STATE) == state
+                        && completeParry(player, state, event.getSource()))) {
+            event.setCanceled(true);
+        }
+    }
+
+    private static boolean completeParry(ServerPlayer player, ParryState state,
+                                         net.minecraft.world.damagesource.DamageSource source) {
+        if (!canParry(player)) return false;
         var accessories = resolveAccessories(player);
         var modifiers = accessories.modifiers();
-        if (!modifiers.canBlock(event.getSource())) return;
-        if (!state.parry(modifiers.refundCooldown())) return;
+        if (!modifiers.isEnabled() || !modifiers.canBlock(source)) return false;
+        if (!state.parry(modifiers.refundCooldown())) return false;
 
-        event.setCanceled(true);
         var level = player.serverLevel();
         Vec3 look = player.getLookAngle();
         Vec3 contact = ParryImpact.contactPoint(player.getEyePosition(), look, player.getYRot(),
@@ -74,17 +97,18 @@ public final class ParryEvents {
         level.sendParticles(ParryMod.SPARK_FLASH.get(), contact.x, contact.y, contact.z,
                 1, 0, 0, 0, 0);
         level.playSound(null, player.blockPosition(), ParryMod.PARRY_SOUND.get(),
-                SoundSource.PLAYERS, 1.0F,
+                SoundSource.PLAYERS, 0.9F + level.random.nextFloat() * 0.1F,
                 0.85F + level.random.nextFloat() * 0.3F);
-        var attacker = event.getSource().getEntity();
-        if (attacker == null) attacker = event.getSource().getDirectEntity();
+        var attacker = source.getEntity();
+        if (attacker == null) attacker = source.getDirectEntity();
         double knockback = modifiers.knockbackStrength();
         if (attacker != null && attacker != player && knockback > 0) {
             attacker.setDeltaMovement(look.x * knockback, 0, look.z * knockback);
             attacker.hurtMarked = true;
         }
         PacketDistributor.sendToPlayer(player, ParryNetwork.Success.INSTANCE);
-        accessories.onSuccess(event.getSource());
+        accessories.onSuccess(source);
+        return true;
     }
 
     private static ParryApi.Resolved resolveAccessories(ServerPlayer player) {
@@ -99,25 +123,34 @@ public final class ParryEvents {
 
     @SubscribeEvent
     public static void tick(ServerTickEvent.Post event) {
+        ParryPendingDamage.tick();
         for (var player : event.getServer().getPlayerList().getPlayers()) {
             if (player.hasData(ParryMod.PARRY_STATE)) {
-                player.getData(ParryMod.PARRY_STATE).tick();
+                var state = player.getData(ParryMod.PARRY_STATE);
+                state.tick();
+                if (state.consumeCooldownUpdate()) {
+                    PacketDistributor.sendToPlayer(player,
+                            new ParryNetwork.Cooldown(state.cooldownTicks(), state.cooldownDuration()));
+                }
             }
         }
     }
 
     @SubscribeEvent
     public static void login(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) ParryPendingDamage.discard(player);
         event.getEntity().setData(ParryMod.PARRY_STATE, new ParryState());
     }
 
     @SubscribeEvent
     public static void respawn(PlayerEvent.PlayerRespawnEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) ParryPendingDamage.discard(player);
         event.getEntity().setData(ParryMod.PARRY_STATE, new ParryState());
     }
 
     @SubscribeEvent
     public static void clonePlayer(PlayerEvent.Clone event) {
+        if (event.getOriginal() instanceof ServerPlayer player) ParryPendingDamage.discard(player);
 
         // Returning from the End clones the player without death and should preserve cooldown.
         if (!event.isWasDeath() && event.getOriginal().hasData(ParryMod.PARRY_STATE)) {
@@ -125,4 +158,12 @@ public final class ParryEvents {
                     event.getOriginal().getData(ParryMod.PARRY_STATE).copy());
         }
     }
+
+    @SubscribeEvent
+    public static void logout(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) ParryPendingDamage.discard(player);
+    }
+
+    @SubscribeEvent
+    public static void stop(ServerStoppedEvent event) { ParryPendingDamage.clear(); }
 }

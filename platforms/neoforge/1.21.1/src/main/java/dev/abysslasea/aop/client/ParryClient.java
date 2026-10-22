@@ -15,6 +15,7 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
+import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
@@ -32,6 +33,7 @@ public final class ParryClient {
     @SubscribeEvent
     public static void tick(ClientTickEvent.Post event) {
         var minecraft = Minecraft.getInstance();
+        ParryHud.tick();
         if (ModList.get().isLoaded("cameraoverhaul")) CameraOverhaulCompat.tick();
         if (ModList.get().isLoaded("punchy")) PunchyCompat.tick();
 
@@ -54,6 +56,21 @@ public final class ParryClient {
                 attackHeldTicks = 0;
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void renderHud(RenderGuiEvent.Post event) {
+        ParryHud.render(event.getGuiGraphics(), ParryHudTiming.partialTick(event.getPartialTick()));
+    }
+
+    @SubscribeEvent
+    public static void check(ParryNetwork.CheckEvent event) {
+        PacketDistributor.sendToServer(new ParryNetwork.Result(event.requestId(), ParryView.canSee(event.targetId())));
+    }
+
+    @SubscribeEvent
+    public static void cooldown(ParryNetwork.CooldownEvent event) {
+        ParryHud.sync(event.remainingTicks(), event.durationTicks());
     }
 
     @SubscribeEvent

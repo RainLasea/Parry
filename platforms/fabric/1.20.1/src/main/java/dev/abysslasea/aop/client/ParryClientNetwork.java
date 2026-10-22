@@ -6,6 +6,22 @@ import dev.abysslasea.aop.ParryNetwork;
 
 final class ParryClientNetwork {
     static void register() {
+        ClientPlayNetworking.registerGlobalReceiver(ParryNetwork.CHECK, (client, handler, buffer, sender) -> {
+            int requestId = buffer.readVarInt();
+            int targetId = buffer.readVarInt();
+            client.execute(() -> {
+                if (client.getConnection() != handler) return;
+                var reply = PacketByteBufs.create();
+                reply.writeVarInt(requestId);
+                reply.writeBoolean(ParryView.canSee(targetId));
+                ClientPlayNetworking.send(ParryNetwork.RESULT, reply);
+            });
+        });
+        ClientPlayNetworking.registerGlobalReceiver(ParryNetwork.COOLDOWN, (client, handler, buffer, sender) -> {
+            int remaining = buffer.readVarInt();
+            int duration = buffer.readVarInt();
+            client.execute(() -> ParryHud.sync(remaining, duration));
+        });
         ClientPlayNetworking.registerGlobalReceiver(ParryNetwork.ANIMATION, (client, handler, buffer, sender) -> {
             int id = buffer.readVarInt();
             client.execute(() -> ParryClient.animation(id));

@@ -23,6 +23,12 @@ tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 
 tasks.named('processResources', ProcessResources) {
     from(rootProject.file('art/icon.png'))
+    from(rootProject.file('art')) {
+        include 'ParryCrosshair_0.png', 'ParryCrosshair_1.png'
+        into 'assets/artofparrying/textures/gui'
+        rename 'ParryCrosshair_0.png', 'parry_ready.png'
+        rename 'ParryCrosshair_1.png', 'parry_cooldown.png'
+    }
     inputs.property 'modVersion', project.version.toString()
     inputs.property 'javaVersion', javaVersion
     inputs.property 'minecraftVersion', minecraftVersion

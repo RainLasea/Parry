@@ -17,14 +17,23 @@ public final class ParryEvents {
     private static final Map<ServerPlayer, ParryState> STATES = new WeakHashMap<>();
     private ParryEvents() {}
     public static ParryState state(ServerPlayer player) { return STATES.computeIfAbsent(player, ignored -> new ParryState()); }
-    public static void reset(ServerPlayer player) { STATES.remove(player); }
+    public static void reset(ServerPlayer player) { ParryPendingDamage.discard(player); STATES.remove(player); }
     public static void copy(ServerPlayer oldPlayer, ServerPlayer newPlayer, boolean alive) {
+        ParryPendingDamage.discard(oldPlayer);
         ParryState old = STATES.remove(oldPlayer);
         if (alive && old != null) STATES.put(newPlayer, old.copy());
         else STATES.remove(newPlayer);
     }
-    public static void clear() { STATES.clear(); }
-    public static void tick() { STATES.values().forEach(ParryState::tick); }
+    public static void clear() { ParryPendingDamage.clear(); STATES.clear(); }
+    public static void tick() {
+        ParryPendingDamage.tick();
+        STATES.forEach((player, state) -> {
+            state.tick();
+            if (state.consumeCooldownUpdate()) {
+                ParryNetwork.cooldown(player, state.cooldownTicks(), state.cooldownDuration());
+            }
+        });
+    }
 
     public static void activate(ServerPlayer player) {
         if (ParryMod.isFakePlayer(player) || !player.isAlive() || player.isSpectator()) return;
@@ -38,20 +47,34 @@ public final class ParryEvents {
         // handles its animation; echoing a swing there makes Punchy queue an ordinary attack.
         player.swing(InteractionHand.MAIN_HAND, false);
         player.serverLevel().playSound(null, player.blockPosition(), ParryMod.BLOCK_SOUND.get(),
-                SoundSource.PLAYERS, 1.0F,
+                SoundSource.PLAYERS, 0.9F + player.serverLevel().random.nextFloat() * 0.1F,
                 0.85F + player.serverLevel().random.nextFloat() * 0.3F);
         ParryNetwork.animation(player);
     }
 
-    public static boolean incomingDamage(ServerPlayer player, net.minecraft.world.damagesource.DamageSource source) {
+    public static boolean incomingDamage(ServerPlayer player, net.minecraft.world.damagesource.DamageSource source, float amount) {
         if (ParryMod.isFakePlayer(player) || !player.isAlive() || player.isSpectator()) return false;
+        if (ParryPendingDamage.isReplaying(player)) return false;
         // Void damage must remain lethal even while a parry window is open.
         if (source.is(DamageTypes.FELL_OUT_OF_WORLD)) return false;
+        if (ParryPendingDamage.queue(player, source, amount)) return true;
 
         var state = state(player);
         if (!state.isActive()) return false;
+        var modifiers = resolveAccessories(player).modifiers();
+        if (!modifiers.canBlock(source)) return false;
+        var target = ParryFacing.viewTarget(source);
+        // Special attacks have no view check and need no client round trip.
+        if (target == null) return completeParry(player, state, source);
+        return ParryPendingDamage.request(player, state, source, amount, target,
+                () -> state(player) == state && completeParry(player, state, source));
+    }
+
+    private static boolean completeParry(ServerPlayer player, ParryState state,
+                                         net.minecraft.world.damagesource.DamageSource source) {
         var accessories = resolveAccessories(player);
         var modifiers = accessories.modifiers();
+        if (!modifiers.isEnabled()) return false;
         if (!modifiers.canBlock(source)) return false;
         if (!state.parry(modifiers.refundCooldown())) return false;
 
@@ -75,7 +98,7 @@ public final class ParryEvents {
         level.sendParticles(ParryMod.SPARK_FLASH.get(), contact.x, contact.y, contact.z,
                 1, 0, 0, 0, 0);
         level.playSound(null, player.blockPosition(), ParryMod.PARRY_SOUND.get(),
-                SoundSource.PLAYERS, 1.0F,
+                SoundSource.PLAYERS, 0.9F + level.random.nextFloat() * 0.1F,
                 0.85F + level.random.nextFloat() * 0.3F);
         var attacker = source.getEntity();
         if (attacker == null) attacker = source.getDirectEntity();

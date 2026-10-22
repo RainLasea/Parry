@@ -49,9 +49,19 @@ dependencies {
     }
 }
 
+def mixinRefmap = 'artofparrying.refmap.json'
+
 mixin {
-    add sourceSets.main, 'artofparrying.refmap.json'
+    add sourceSets.main, mixinRefmap
     config 'artofparrying.mixins.json'
+}
+
+// Forge needs the generated Mojmap-to-SRG refmap at runtime.
+tasks.named('processResources', ProcessResources) {
+    inputs.property 'mixinRefmap', mixinRefmap
+    filesMatching('artofparrying.mixins.json') {
+        filter { line -> line.replace('"package":', "\"refmap\": \"${mixinRefmap}\",\n  \"package\":") }
+    }
 }
 
 tasks.named('jar', Jar) { manifest.attributes('MixinConfigs': 'artofparrying.mixins.json') }

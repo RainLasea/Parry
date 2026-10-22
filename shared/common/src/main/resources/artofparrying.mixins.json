@@ -3,6 +3,6 @@
   "minVersion": "0.8",
   "package": "dev.abysslasea.aop.mixin",
   "compatibilityLevel": "JAVA_21",
-  "client": ["client.CameraSystemMixin", "client.PunchyPoseHandlerMixin", "client.AbstractSoundInstanceMixin"],
+  "client": ["client.CameraSystemMixin", "client.PunchyPoseHandlerMixin", "client.AbstractSoundInstanceMixin", "client.GameRendererAccessor"],
   "injectors": { "defaultRequire": 1 }
 }

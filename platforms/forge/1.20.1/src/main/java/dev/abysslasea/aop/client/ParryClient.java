@@ -15,6 +15,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
+import net.minecraftforge.client.event.RenderGuiEvent;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import org.lwjgl.glfw.GLFW;
 
@@ -32,6 +33,7 @@ public final class ParryClient {
     public static void tick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         var minecraft = Minecraft.getInstance();
+        ParryHud.tick();
         if (ModList.get().isLoaded("cameraoverhaul")) CameraOverhaulCompat.tick();
         if (ModList.get().isLoaded("punchy")) PunchyCompat.tick();
 
@@ -54,6 +56,21 @@ public final class ParryClient {
                 attackHeldTicks = 0;
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void renderHud(RenderGuiEvent.Post event) {
+        ParryHud.render(event.getGuiGraphics(), event.getPartialTick());
+    }
+
+    @SubscribeEvent
+    public static void check(ParryNetwork.CheckEvent event) {
+        ParryNetwork.result(event.requestId(), ParryView.canSee(event.targetId()));
+    }
+
+    @SubscribeEvent
+    public static void cooldown(ParryNetwork.CooldownEvent event) {
+        ParryHud.sync(event.remainingTicks(), event.durationTicks());
     }
 
     @SubscribeEvent

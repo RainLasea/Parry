@@ -10,7 +10,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 public final class ForgeEvents {
     private ForgeEvents() {}
     @SubscribeEvent public static void damage(LivingAttackEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player && ParryEvents.incomingDamage(player, event.getSource())) event.setCanceled(true);
+        if (event.getEntity() instanceof ServerPlayer player && ParryEvents.incomingDamage(player, event.getSource(), event.getAmount())) event.setCanceled(true);
     }
     @SubscribeEvent public static void tick(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.END) ParryEvents.tick();
