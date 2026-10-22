@@ -1,0 +1,18 @@
+{
+  "block": {
+    "sounds": [
+      {
+        "name": "artofparrying:block",
+        "stream": false
+      }
+    ]
+  },
+  "parry_sound": {
+    "sounds": [
+      {
+        "name": "artofparrying:parry_sound",
+        "stream": false
+      }
+    ]
+  }
+}

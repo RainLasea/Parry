@@ -13,14 +13,14 @@ apply from: rootProject.file('gradle/mod-common.gradle')
 
 neoForge {
     version = providers.gradleProperty('neo_version').getOrElse(libs.versions.neoforge.get())
-    mods { parry { sourceSet sourceSets.main } }
+    mods { artofparrying { sourceSet sourceSets.main } }
     unitTest {
         enable()
-        testedMod = mods.parry
+        testedMod = mods.artofparrying
     }
     runs {
-        client { client(); loadedMods = [mods.parry] }
-        server { server(); programArgument '--nogui'; loadedMods = [mods.parry] }
+        client { client(); loadedMods = [mods.artofparrying] }
+        server { server(); programArgument '--nogui'; loadedMods = [mods.artofparrying] }
     }
 }
 

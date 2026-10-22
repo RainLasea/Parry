@@ -1,7 +1,7 @@
 // Version-specific dependency providers are declared by the two Fabric targets.
 apply from: rootProject.file('gradle/mod-common.gradle')
 
-loom { mods { parry { sourceSet sourceSets.main } } }
+loom { mods { artofparrying { sourceSet sourceSets.main } } }
 
 dependencies {
     minecraft "com.mojang:minecraft:${minecraftVersion}"

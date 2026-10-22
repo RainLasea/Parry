@@ -17,7 +17,7 @@ legacyForge {
         client { client() }
         server { server(); programArgument '--nogui' }
     }
-    mods { parry { sourceSet sourceSets.main } }
+    mods { artofparrying { sourceSet sourceSets.main } }
 }
 
 repositories { maven { url = 'https://maven.theillusivec4.top/' } }
@@ -46,8 +46,8 @@ dependencies {
 }
 
 mixin {
-    add sourceSets.main, 'parry.refmap.json'
-    config 'parry.mixins.json'
+    add sourceSets.main, 'artofparrying.refmap.json'
+    config 'artofparrying.mixins.json'
 }
 
-tasks.named('jar', Jar) { manifest.attributes('MixinConfigs': 'parry.mixins.json') }
+tasks.named('jar', Jar) { manifest.attributes('MixinConfigs': 'artofparrying.mixins.json') }

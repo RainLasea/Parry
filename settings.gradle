@@ -5,7 +5,7 @@ pluginManagement {
         maven { url = 'https://maven.fabricmc.net/' }
     }
 }
-rootProject.name = 'Parry'
+rootProject.name = 'Art of Parrying'
 
 // Keep short task paths while grouping physical modules by loader and Minecraft version.
 [

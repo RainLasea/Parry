@@ -1,24 +1,25 @@
 {
   "schemaVersion": 1,
-  "id": "parry",
+  "id": "artofparrying",
   "version": "${version}",
-  "name": "Parry",
+  "name": "Art of Parrying",
+  "icon": "icon.png",
   "description": "Server-authoritative parrying with optional animations and camera feedback.",
   "authors": [
-    "AbyssLasea"
+    "AbyssLasea & ShanKa"
   ],
   "license": "LGPL-3.0-only",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.abysslasea.parry.ParryMod"
+      "dev.abysslasea.aop.ParryMod"
     ],
     "client": [
-      "net.abysslasea.parry.client.ParryClient"
+      "dev.abysslasea.aop.client.ParryClient"
     ]
   },
   "mixins": [
-    "parry.mixins.json"
+    "artofparrying.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.19.3",
