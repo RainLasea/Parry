@@ -41,4 +41,7 @@ cloth-forge-mc1201 = { module = "maven.modrinth:cloth-config", version = "11.1.1
 cloth-fabric-mc1201 = { module = "maven.modrinth:cloth-config", version = "11.1.136+fabric" }
 cloth-fabric-mc1211 = { module = "maven.modrinth:cloth-config", version = "15.0.140+fabric" }
 cloth-neoforge-mc1211 = { module = "maven.modrinth:cloth-config", version = "15.0.140+neoforge" }
+cloth-basic-math = { module = "me.shedaniel.cloth:basic-math", version = "0.6.1" }
+modmenu-mc1201 = { module = "maven.modrinth:modmenu", version = "7.2.2" }
+modmenu-mc1211 = { module = "maven.modrinth:modmenu", version = "11.0.5" }
 neoorigins = { module = "com.cyberday1:neoorigins", version = "2.2.29" }

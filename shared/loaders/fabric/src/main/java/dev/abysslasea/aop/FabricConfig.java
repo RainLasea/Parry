@@ -29,7 +29,7 @@ public final class FabricConfig {
     public static void load(Path path, Consumer<FileConfig> read) {
         try {
             Files.createDirectories(path.getParent());
-            try (FileConfig config = FileConfig.of(path)) {
+            try (FileConfig config = FileConfig.builder(path).sync().build()) {
                 config.load();
                 read.accept(config);
                 config.save();

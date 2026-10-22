@@ -3,6 +3,13 @@ apply from: rootProject.file('gradle/mod-common.gradle')
 
 loom { mods { artofparrying { sourceSet sourceSets.main } } }
 
+repositories {
+    maven {
+        url = 'https://maven.shedaniel.me/'
+        content { includeGroup 'me.shedaniel.cloth' }
+    }
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:${minecraftVersion}"
     mappings loom.officialMojangMappings()
@@ -16,6 +23,8 @@ dependencies {
     modCompileOnly playerAnimatorDependency
     modCompileOnly punchyDependency
     modCompileOnly cameraOverhaulDependency
+    modCompileOnly clothConfigDependency
+    modCompileOnly modMenuDependency
     if (providers.gradleProperty('withPlayerAnimator').getOrElse('false').toBoolean()) {
         modRuntimeOnly playerAnimatorDependency
     }
@@ -24,6 +33,13 @@ dependencies {
     }
     if (providers.gradleProperty('withCameraOverhaul').getOrElse('false').toBoolean()) {
         modRuntimeOnly cameraOverhaulDependency
+    }
+    if (providers.gradleProperty('withClothConfig').getOrElse('false').toBoolean()
+            || providers.gradleProperty('withCameraOverhaul').getOrElse('false').toBoolean()) {
         modRuntimeOnly clothConfigDependency
+        modRuntimeOnly libs.cloth.basic.math
+    }
+    if (providers.gradleProperty('withModMenu').getOrElse('false').toBoolean()) {
+        modRuntimeOnly modMenuDependency
     }
 }

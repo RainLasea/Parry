@@ -44,3 +44,9 @@ mandatory=false
 versionRange="[5.14.1,6)"
 ordering="AFTER"
 side="BOTH"
+[[dependencies.artofparrying]]
+modId="cloth_config"
+mandatory=false
+versionRange="[11,12)"
+ordering="AFTER"
+side="CLIENT"

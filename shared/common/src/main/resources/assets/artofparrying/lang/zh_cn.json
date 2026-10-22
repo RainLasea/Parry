@@ -1,4 +1,10 @@
 {
+  "config.artofparrying.config": "Art of Parrying",
+  "config.artofparrying.sounds": "音效",
+  "config.artofparrying.block_volume": "格挡起手音量",
+  "config.artofparrying.parry_volume": "弹反成功音量",
+  "config.artofparrying.volume": "%s%%",
+  "config.artofparrying.volume.tooltip": "0% 为静音。音量受“玩家”音量设置影响。",
   "key.categories.artofparrying": "Art of Parrying",
   "key.artofparrying.parry_key": "弹反"
 }

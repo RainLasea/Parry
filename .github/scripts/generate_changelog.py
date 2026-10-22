@@ -23,7 +23,7 @@ def markdown_text(value: str) -> str:
 def generate(version: str, repository: str, notes: str = "") -> str:
     head = git("rev-parse", "HEAD").stdout.strip()
     # Exclude the tag being released when selecting the previous version.
-    previous = git("describe", "--tags", "--match", "v[0-9]*", "--abbrev=0", "HEAD^", check=False)
+    previous = git("describe", "--tags", "--match", "v[0-9]*", "--match", "[0-9]*", "--abbrev=0", "HEAD^", check=False)
     base = previous.stdout.strip() if previous.returncode == 0 else None
     # The first release uses its release commit instead of unrelated setup history.
     revision = f"{base}..{head}" if base else f"{head}^!"

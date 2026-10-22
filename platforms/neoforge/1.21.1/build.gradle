@@ -52,6 +52,7 @@ dependencies {
     compileOnly "${curiosDependency}:api"
     compileOnly neoOriginsDependency
     compileOnly cameraOverhaulDependency
+    compileOnly libs.cloth.neoforge.mc1211
     compileOnly playerAnimatorDependency
     compileOnly punchyDependency
     if (providers.gradleProperty('withCurios').getOrElse('false').toBoolean()) {
@@ -62,6 +63,9 @@ dependencies {
     }
     if (providers.gradleProperty('withCameraOverhaul').getOrElse('false').toBoolean()) {
         runtimeOnly cameraOverhaulDependency
+    }
+    if (providers.gradleProperty('withClothConfig').getOrElse('false').toBoolean()
+            || providers.gradleProperty('withCameraOverhaul').getOrElse('false').toBoolean()) {
         runtimeOnly libs.cloth.neoforge.mc1211
     }
     if (providers.gradleProperty('withPlayerAnimator').getOrElse('false').toBoolean()) {

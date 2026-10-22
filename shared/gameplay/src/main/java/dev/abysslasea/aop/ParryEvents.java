@@ -38,7 +38,8 @@ public final class ParryEvents {
         // handles its animation; echoing a swing there makes Punchy queue an ordinary attack.
         player.swing(InteractionHand.MAIN_HAND, false);
         player.serverLevel().playSound(null, player.blockPosition(), ParryMod.BLOCK_SOUND.get(),
-                SoundSource.MASTER, 2.0F, 0.85F + player.serverLevel().random.nextFloat() * 0.3F);
+                SoundSource.PLAYERS, 1.0F,
+                0.85F + player.serverLevel().random.nextFloat() * 0.3F);
         ParryNetwork.animation(player);
     }
 
@@ -74,7 +75,8 @@ public final class ParryEvents {
         level.sendParticles(ParryMod.SPARK_FLASH.get(), contact.x, contact.y, contact.z,
                 1, 0, 0, 0, 0);
         level.playSound(null, player.blockPosition(), ParryMod.PARRY_SOUND.get(),
-                SoundSource.MASTER, 1.0F, 0.85F + level.random.nextFloat() * 0.3F);
+                SoundSource.PLAYERS, 1.0F,
+                0.85F + level.random.nextFloat() * 0.3F);
         var attacker = source.getEntity();
         if (attacker == null) attacker = source.getDirectEntity();
         double knockback = modifiers.knockbackStrength();

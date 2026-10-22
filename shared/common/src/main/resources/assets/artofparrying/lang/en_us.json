@@ -1,5 +1,10 @@
 {
   "config.artofparrying.config": "Art of Parrying",
+  "config.artofparrying.sounds": "Sounds",
+  "config.artofparrying.block_volume": "Block sound volume",
+  "config.artofparrying.parry_volume": "Successful parry sound volume",
+  "config.artofparrying.volume": "%s%%",
+  "config.artofparrying.volume.tooltip": "0% mutes the sound. Also affected by the Players volume setting.",
   "subtitles.parry_sound": "",
   "subtitles.block": "",
   "key.categories.artofparrying": "Art of Parrying",

@@ -15,6 +15,8 @@ public final class ParryCameraConfig {
 
         public static final ModConfigSpec.BooleanValue PARRY_ON_RELEASE_ATTACK;
         public static final ModConfigSpec.IntValue PARRY_RELEASE_ATTACK_TICKS;
+        public static final ModConfigSpec.DoubleValue BLOCK_SOUND_VOLUME;
+        public static final ModConfigSpec.DoubleValue PARRY_SOUND_VOLUME;
 
         static {
                 var builder = new ModConfigSpec.Builder();
@@ -41,9 +43,18 @@ public final class ParryCameraConfig {
                                 .defineInRange("parry_release_attack_ticks", 3, 1, 100);
                 builder.pop();
 
+                builder.push("sounds");
+                BLOCK_SOUND_VOLUME = builder.comment("Block sound volume. Set to 0 to mute.")
+                                .defineInRange("block_volume", 0.5, 0.0, 1.0);
+                PARRY_SOUND_VOLUME = builder.comment("Successful parry sound volume. Set to 0 to mute.")
+                                .defineInRange("parry_volume", 0.5, 0.0, 1.0);
+                builder.pop();
+
                 SPEC = builder.build();
         }
 
         private ParryCameraConfig() {
         }
+
+        public static void save() { SPEC.save(); }
 }

@@ -32,6 +32,7 @@ dependencies {
     modCompileOnly libs.playeranimator.forge.mc1201
     modCompileOnly libs.punchy.forge.mc1201
     modCompileOnly libs.cameraoverhaul.forge.mc1201
+    modCompileOnly libs.cloth.forge.mc1201
     annotationProcessor "${libs.mixin.processor.get()}:processor"
     if (providers.gradleProperty('withPlayerAnimator').getOrElse('false').toBoolean()) {
         modRuntimeOnly libs.playeranimator.forge.mc1201
@@ -41,7 +42,10 @@ dependencies {
     }
     if (providers.gradleProperty('withCameraOverhaul').getOrElse('false').toBoolean()) {
         clientAdditionalRuntimeClasspath libs.cameraoverhaul.forge.mc1201
-        clientAdditionalRuntimeClasspath libs.cloth.forge.mc1201
+    }
+    if (providers.gradleProperty('withClothConfig').getOrElse('false').toBoolean()
+            || providers.gradleProperty('withCameraOverhaul').getOrElse('false').toBoolean()) {
+        modRuntimeOnly libs.cloth.forge.mc1201
     }
 }
 

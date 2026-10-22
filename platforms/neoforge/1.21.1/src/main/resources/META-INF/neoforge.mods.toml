@@ -61,3 +61,10 @@ type="optional"
 versionRange="[9.5.1,10)"
 ordering="AFTER"
 side="BOTH"
+
+[[dependencies.artofparrying]]
+modId="cloth_config"
+type="optional"
+versionRange="[15,16)"
+ordering="AFTER"
+side="CLIENT"

@@ -88,6 +88,11 @@ public final class ParryClient {
 
         @SubscribeEvent
         public static void setup(FMLClientSetupEvent event) {
+            if (ModList.get().isLoaded("cloth_config")) {
+                ModList.get().getModContainerById(ParryMod.MODID).orElseThrow().registerExtensionPoint(
+                        net.minecraftforge.client.ConfigScreenHandler.ConfigScreenFactory.class,
+                        () -> new net.minecraftforge.client.ConfigScreenHandler.ConfigScreenFactory(ParryConfigScreen::create));
+            }
             if (ModList.get().isLoaded("playeranimator")) {
                 event.enqueueWork(PlayerAnimatorCompat::setup);
             }

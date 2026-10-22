@@ -16,6 +16,9 @@
     ],
     "client": [
       "dev.abysslasea.aop.client.ParryClient"
+    ],
+    "modmenu": [
+      "dev.abysslasea.aop.client.ParryModMenu"
     ]
   },
   "mixins": [
@@ -28,6 +31,8 @@
     "java": ">=21"
   },
   "suggests": {
+    "cloth-config": ">=15 <16",
+    "modmenu": ">=11 <12",
     "punchy": ">=2.4 <3",
     "cameraoverhaul": ">=2 <3",
     "playeranimator": "*"

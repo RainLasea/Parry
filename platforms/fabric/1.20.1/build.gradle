@@ -12,6 +12,7 @@ ext {
     punchyDependency = libs.punchy.fabric.mc1201
     cameraOverhaulDependency = libs.cameraoverhaul.fabric.mc1201
     clothConfigDependency = libs.cloth.fabric.mc1201
+    modMenuDependency = libs.modmenu.mc1201
 }
 
 apply from: rootProject.file('gradle/fabric-common.gradle')
