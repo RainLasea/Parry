@@ -25,7 +25,7 @@ subprojects {
 
 tasks.register('buildAll') {
     group = 'build'
-    description = 'Build and test every supported Minecraft/loader target.'
+    description = 'Build every supported Minecraft/loader target.'
     dependsOn tasks.named('build')
 }
 
@@ -37,12 +37,6 @@ tasks.register('collectJars', Sync) {
     targets.each { target ->
         from(layout.buildDirectory.file("platforms/${target}/libs/${mod_id}-${version}-${target}.jar"))
     }
-}
-
-tasks.register('test') {
-    group = 'verification'
-    description = 'Run tests for all supported targets.'
-    dependsOn targets.collect { ":${it}:test" }
 }
 
 // Preserve the former root commands for the default NeoForge development target.

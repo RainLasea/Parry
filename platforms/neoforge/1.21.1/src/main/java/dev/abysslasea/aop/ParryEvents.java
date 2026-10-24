@@ -2,8 +2,6 @@ package dev.abysslasea.aop;
 
 import dev.abysslasea.aop.api.ParryApi;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.level.ClipContext;
@@ -20,29 +18,34 @@ import net.neoforged.neoforge.network.PacketDistributor;
 
 public final class ParryEvents {
     private ParryEvents() {}
+    @SubscribeEvent public static void reload(net.neoforged.neoforge.event.AddReloadListenerEvent event) {
+        event.addListener(new ParryItemRules.ReloadListener());
+    }
 
     public static void activate(ServerPlayer player) {
         if (player instanceof FakePlayer || !player.isAlive() || player.isSpectator()) return;
         if (!canParry(player)) return;
-        var modifiers = resolveAccessories(player).modifiers();
+        var activation = ParryItemRules.select(player);
+        if (activation == null) return;
+        var modifiers = resolveAccessories(player, activation).modifiers();
         if (!modifiers.isEnabled()) return;
         var state = player.getData(ParryMod.PARRY_STATE);
         long tick = player.serverLevel().getGameTime();
         if (!state.activate(modifiers.windowTicks(), modifiers.cooldownTicks(), tick)) return;
 
+        state.activation(activation);
+
         // Observers retain the vanilla swing fallback. The activating client's custom packet
         // handles its animation; echoing a swing there makes Punchy queue an ordinary attack.
-        player.swing(InteractionHand.MAIN_HAND, false);
-        player.serverLevel().playSound(null, player.blockPosition(), ParryMod.BLOCK_SOUND.get(),
-                SoundSource.PLAYERS, 0.9F + player.serverLevel().random.nextFloat() * 0.1F,
-                0.85F + player.serverLevel().random.nextFloat() * 0.3F);
+        player.swing(activation.hand(), false);
+        ParrySounds.play(player, activation.profile().activationSound(), false);
         PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new ParryNetwork.Animation(player.getId()));
     }
 
     @SubscribeEvent
     public static void incomingDamage(LivingIncomingDamageEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player) || player instanceof FakePlayer) return;
-        if (ParryPendingDamage.isReplaying(player)) return;
+        if (ParryPendingDamage.isReplaying(player) || ParryReflection.isReflecting()) return;
         // Void damage must remain lethal even while a parry window is open.
         if (event.getSource().is(DamageTypes.FELL_OUT_OF_WORLD)) return;
         if (ParryPendingDamage.queue(player, event.getSource(), event.getOriginalAmount())) {
@@ -54,25 +57,29 @@ public final class ParryEvents {
 
         var state = player.getData(ParryMod.PARRY_STATE);
         if (!state.isActive()) return;
-        var modifiers = resolveAccessories(player).modifiers();
+        var activation = state.activation();
+        if (activation == null || !activation.stillHeld(player)) return;
+        var modifiers = resolveAccessories(player, activation).modifiers();
         if (!modifiers.canBlock(event.getSource())) return;
         var target = ParryFacing.viewTarget(event.getSource());
         if (target == null) {
-            if (completeParry(player, state, event.getSource())) event.setCanceled(true);
+            if (completeParry(player, state, event.getSource(), event.getOriginalAmount())) event.setCanceled(true);
             return;
         }
         if (ParryPendingDamage.request(player, state, event.getSource(), event.getOriginalAmount(),
                 target,
                 () -> player.getData(ParryMod.PARRY_STATE) == state
-                        && completeParry(player, state, event.getSource()))) {
+                        && completeParry(player, state, event.getSource(), event.getOriginalAmount()))) {
             event.setCanceled(true);
         }
     }
 
     private static boolean completeParry(ServerPlayer player, ParryState state,
-                                         net.minecraft.world.damagesource.DamageSource source) {
+                                         net.minecraft.world.damagesource.DamageSource source, float amount) {
         if (!canParry(player)) return false;
-        var accessories = resolveAccessories(player);
+        var activation = state.activation();
+        if (activation == null || !activation.stillHeld(player)) return false;
+        var accessories = resolveAccessories(player, activation);
         var modifiers = accessories.modifiers();
         if (!modifiers.isEnabled() || !modifiers.canBlock(source)) return false;
         if (!state.parry(modifiers.refundCooldown())) return false;
@@ -96,9 +103,7 @@ public final class ParryEvents {
         }
         level.sendParticles(ParryMod.SPARK_FLASH.get(), contact.x, contact.y, contact.z,
                 1, 0, 0, 0, 0);
-        level.playSound(null, player.blockPosition(), ParryMod.PARRY_SOUND.get(),
-                SoundSource.PLAYERS, 0.9F + level.random.nextFloat() * 0.1F,
-                0.85F + level.random.nextFloat() * 0.3F);
+        ParrySounds.play(player, activation.profile().successSound(), true);
         var attacker = source.getEntity();
         if (attacker == null) attacker = source.getDirectEntity();
         double knockback = modifiers.knockbackStrength();
@@ -107,13 +112,14 @@ public final class ParryEvents {
             attacker.hurtMarked = true;
         }
         PacketDistributor.sendToPlayer(player, ParryNetwork.Success.INSTANCE);
+        ParryReflection.reflect(player, source, amount, activation.profile());
         accessories.onSuccess(source);
         return true;
     }
 
-    private static ParryApi.Resolved resolveAccessories(ServerPlayer player) {
-        return ParryApi.resolve(player, ParryConfig.PARRY_COOLDOWN.get().intValue(),
-                ParryConfig.PARRY_WINDOW.get().intValue(), ParryConfig.REFUND_PARRY_COOLDOWN.get());
+    private static ParryApi.Resolved resolveAccessories(ServerPlayer player, ParryItemRules.Activation activation) {
+        var profile = activation.profile();
+        return ParryApi.resolve(player, activation.cooldown(), profile.window(), profile.refund());
     }
 
     private static boolean canParry(ServerPlayer player) {
@@ -165,5 +171,5 @@ public final class ParryEvents {
     }
 
     @SubscribeEvent
-    public static void stop(ServerStoppedEvent event) { ParryPendingDamage.clear(); }
+    public static void stop(ServerStoppedEvent event) { ParryPendingDamage.clear(); ParryItemRules.clear(); }
 }

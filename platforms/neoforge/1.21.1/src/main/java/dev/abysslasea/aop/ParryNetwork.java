@@ -11,10 +11,12 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 public final class ParryNetwork {
     private ParryNetwork() {}
-    public static boolean canCheck(ServerPlayer player) { return true; } // Protocol 4 is required at login.
+    public static boolean canCheck(ServerPlayer player) { return true; } // Protocol 5 is required at login.
 
     public static void register(RegisterPayloadHandlersEvent event) {
-        var registrar = event.registrar("4");
+        var registrar = event.registrar("5");
+        registrar.playToClient(Sound.TYPE, Sound.CODEC,
+                (payload, context) -> NeoForge.EVENT_BUS.post(new SoundEvent(payload)));
         registrar.playToServer(Result.TYPE, Result.CODEC, (payload, context) -> {
             if (context.player() instanceof ServerPlayer player) {
                 ParryPendingDamage.reply(player, payload.requestId(), payload.visible());
@@ -114,5 +116,25 @@ public final class ParryNetwork {
         private final int entityId;
         public AnimationEvent(int entityId) { this.entityId = entityId; }
         public int entityId() { return entityId; }
+    }
+    public record Sound(String sound, double x, double y, double z, float pitch, boolean success) implements CustomPacketPayload {
+        public static final Type<Sound> TYPE = new Type<>(ParryMod.id("parry_sound"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, Sound> CODEC = new StreamCodec<>() {
+            @Override public Sound decode(RegistryFriendlyByteBuf buffer) {
+                return new Sound(buffer.readUtf(), buffer.readDouble(), buffer.readDouble(), buffer.readDouble(), buffer.readFloat(), buffer.readBoolean());
+            }
+            @Override public void encode(RegistryFriendlyByteBuf buffer, Sound sound) {
+                buffer.writeUtf(sound.sound()); buffer.writeDouble(sound.x()); buffer.writeDouble(sound.y());
+                buffer.writeDouble(sound.z()); buffer.writeFloat(sound.pitch()); buffer.writeBoolean(sound.success());
+            }
+        };
+        @Override public Type<Sound> type() { return TYPE; }
+    }
+    public static void sound(ServerPlayer observer, net.minecraft.resources.ResourceLocation id, double x, double y, double z, float pitch, boolean success) {
+        net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(observer, new Sound(id.toString(), x, y, z, pitch, success));
+    }
+    public static final class SoundEvent extends Event {
+        public final Sound sound;
+        public SoundEvent(Sound sound) { this.sound = sound; }
     }
 }

@@ -9,11 +9,18 @@ import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public final class ParryNetwork {
-    private static final String PROTOCOL = "4";
+    private static final String PROTOCOL = "5";
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(ParryMod.id("network"), () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals);
     private ParryNetwork() {}
-    public static boolean canCheck(ServerPlayer player) { return true; } // Protocol 4 is required at login.
+    public static boolean canCheck(ServerPlayer player) { return true; } // Protocol 5 is required at login.
     public static void register() {
+        CHANNEL.messageBuilder(Sound.class, 6, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder((message, buffer) -> {
+                    buffer.writeUtf(message.sound()); buffer.writeDouble(message.x()); buffer.writeDouble(message.y());
+                    buffer.writeDouble(message.z()); buffer.writeFloat(message.pitch()); buffer.writeBoolean(message.success());
+                })
+                .decoder(buffer -> new Sound(buffer.readUtf(), buffer.readDouble(), buffer.readDouble(), buffer.readDouble(), buffer.readFloat(), buffer.readBoolean()))
+                .consumerMainThread((message, context) -> MinecraftForge.EVENT_BUS.post(new SoundEvent(message))).add();
         CHANNEL.messageBuilder(Check.class, 4, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder((message, buffer) -> {
                     buffer.writeVarInt(message.requestId());
@@ -98,5 +105,13 @@ public final class ParryNetwork {
         private final int entityId;
         public AnimationEvent(int entityId) { this.entityId = entityId; }
         public int entityId() { return entityId; }
+    }
+    public record Sound(String sound, double x, double y, double z, float pitch, boolean success) {}
+    public static final class SoundEvent extends Event {
+        public final Sound sound;
+        public SoundEvent(Sound sound) { this.sound = sound; }
+    }
+    public static void sound(ServerPlayer observer, net.minecraft.resources.ResourceLocation id, double x, double y, double z, float pitch, boolean success) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> observer), new Sound(id.toString(), x, y, z, pitch, success));
     }
 }

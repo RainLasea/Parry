@@ -1,0 +1,16 @@
+{
+  "targets": ["minecraft:shield"],
+  "parry_window": 8,
+  "cooldown": {
+    "mode": "shield_cooldown",
+    "percent": 50,
+    "fallback_ticks": 60
+  },
+  "refund_parry_cooldown": false,
+  "reflect_damage": true,
+  "reflect_multiplier": 0.5,
+  "sounds": {
+    "activation": "artofparrying:block",
+    "success": "artofparrying:parry_sound"
+  }
+}

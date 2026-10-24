@@ -1,0 +1,7 @@
+{
+  "pack": {
+    "pack_format": 15,
+    "supported_formats": { "min_inclusive": 15, "max_inclusive": 48 },
+    "description": "Art of Parrying: example per-item rules (1.20.1 / 1.21.1)"
+  }
+}

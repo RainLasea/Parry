@@ -24,7 +24,7 @@ public final class ParryView {
         var camera = renderer.getMainCamera();
         double fov = ((GameRendererAccessor) renderer).parry$getFov(camera, 1.0F, true);
         var eyes = camera.getPosition();
-        if (!isInView(camera.rotation(), eyes, renderer.getProjectionMatrix(fov), target.getBoundingBox())) return false;
+        if (!isInView(ParryCameraView.rotation(camera), eyes, renderer.getProjectionMatrix(fov), target.getBoundingBox())) return false;
 
         var obstruction = client.level.clip(new ClipContext(eyes, target.getEyePosition(),
                 ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, client.player));

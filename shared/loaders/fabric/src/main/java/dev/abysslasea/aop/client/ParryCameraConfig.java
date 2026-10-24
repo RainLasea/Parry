@@ -36,6 +36,12 @@ public final class ParryCameraConfig {
 
     public static void save() {
         FabricConfig.load(FabricLoader.getInstance().getConfigDir().resolve("artofparrying-client.toml"), config -> {
+            config.set("cameraoverhaul.enabled", ENABLED.get());
+            config.set("cameraoverhaul.intensity", INTENSITY.get());
+            config.set("cameraoverhaul.duration_seconds", DURATION.get());
+            config.set("cameraoverhaul.third_person_scale", THIRD_PERSON_SCALE.get());
+            config.set("controls.parry_on_release_attack", PARRY_ON_RELEASE_ATTACK.get());
+            config.set("controls.parry_release_attack_ticks", PARRY_RELEASE_ATTACK_TICKS.get());
             config.set("sounds.block_volume", BLOCK_SOUND_VOLUME.get());
             config.set("sounds.parry_volume", PARRY_SOUND_VOLUME.get());
         });

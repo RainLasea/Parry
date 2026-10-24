@@ -3,11 +3,15 @@ package dev.abysslasea.aop;
 /** Replaces timers on activation so an earlier parry cannot close a newer window. */
 public final class ParryState {
     private int activeTicks;
+    private ParryItemRules.Activation activation;
     private int cooldownTicks;
     private int cooldownDuration;
     private boolean cooldownChanged;
     private boolean awaitingConfirmation;
     private long lastActivationTick = Long.MIN_VALUE;
+
+    public ParryItemRules.Activation activation() { return activation; }
+    public void activation(ParryItemRules.Activation value) { activation = value; }
 
     public boolean activate(int window, int cooldown, long serverTick) {
         // Accept one activation per tick even at zero cooldown to bound feedback packets.

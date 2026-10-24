@@ -29,7 +29,7 @@ public final class ParryMod {
         if (net.minecraftforge.fml.ModList.get().isLoaded("curios")) {
             dev.abysslasea.aop.compat.CuriosCompat.register();
         }
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ParryConfig.SPEC, "artofparrying.toml");
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ParryConfig.SPEC, "artofparrying.toml");
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, dev.abysslasea.aop.client.ParryCameraConfig.SPEC, "artofparrying-client.toml");
         ParryNetwork.register();
         MinecraftForge.EVENT_BUS.register(ForgeEvents.class);

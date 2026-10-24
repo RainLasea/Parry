@@ -6,6 +6,14 @@ import dev.abysslasea.aop.ParryNetwork;
 
 final class ParryClientNetwork {
     static void register() {
+        ClientPlayNetworking.registerGlobalReceiver(ParryNetwork.SOUND, (client, handler, buffer, sender) -> {
+            String id = buffer.readUtf();
+            double x = buffer.readDouble(), y = buffer.readDouble(), z = buffer.readDouble();
+            float pitch = buffer.readFloat();
+            boolean success = buffer.readBoolean();
+            client.execute(() -> { if (client.getConnection() == handler) ParrySoundPlayer.play(id, x, y, z, pitch, success); });
+        });
+
         ClientPlayNetworking.registerGlobalReceiver(ParryNetwork.CHECK, (client, handler, buffer, sender) -> {
             int requestId = buffer.readVarInt();
             int targetId = buffer.readVarInt();

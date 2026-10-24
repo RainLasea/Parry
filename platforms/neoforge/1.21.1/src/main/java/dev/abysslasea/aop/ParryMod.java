@@ -46,7 +46,7 @@ public final class ParryMod {
         if (ModList.get().isLoaded("neoorigins")) {
             dev.abysslasea.aop.compat.NeoOriginsCompat.register(modBus);
         }
-        container.registerConfig(ModConfig.Type.SERVER, ParryConfig.SPEC, "artofparrying.toml");
+        container.registerConfig(ModConfig.Type.COMMON, ParryConfig.SPEC, "artofparrying.toml");
         container.registerConfig(ModConfig.Type.CLIENT, dev.abysslasea.aop.client.ParryCameraConfig.SPEC,
                 "artofparrying-client.toml");
         modBus.addListener(ParryNetwork::register);

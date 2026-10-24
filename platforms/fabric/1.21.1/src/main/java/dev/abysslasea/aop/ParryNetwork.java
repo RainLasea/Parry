@@ -13,6 +13,7 @@ public final class ParryNetwork {
     public static void register() {
         PayloadTypeRegistry.playC2S().register(Request.TYPE, Request.CODEC);
         PayloadTypeRegistry.playC2S().register(Result.TYPE, Result.CODEC);
+        PayloadTypeRegistry.playS2C().register(Sound.TYPE, Sound.CODEC);
         PayloadTypeRegistry.playS2C().register(Check.TYPE, Check.CODEC);
         PayloadTypeRegistry.playS2C().register(Animation.TYPE, Animation.CODEC);
         PayloadTypeRegistry.playS2C().register(Success.TYPE, Success.CODEC);
@@ -78,4 +79,21 @@ public final class ParryNetwork {
         @Override public Type<Success> type() { return TYPE; }
     }
 
+    public record Sound(String sound, double x, double y, double z, float pitch, boolean success) implements CustomPacketPayload {
+        public static final Type<Sound> TYPE = new Type<>(ParryMod.id("parry_sound"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, Sound> CODEC = new StreamCodec<>() {
+            @Override public Sound decode(RegistryFriendlyByteBuf buffer) {
+                return new Sound(buffer.readUtf(), buffer.readDouble(), buffer.readDouble(), buffer.readDouble(), buffer.readFloat(), buffer.readBoolean());
+            }
+            @Override public void encode(RegistryFriendlyByteBuf buffer, Sound sound) {
+                buffer.writeUtf(sound.sound()); buffer.writeDouble(sound.x()); buffer.writeDouble(sound.y());
+                buffer.writeDouble(sound.z()); buffer.writeFloat(sound.pitch()); buffer.writeBoolean(sound.success());
+            }
+        };
+        @Override public Type<Sound> type() { return TYPE; }
+    }
+    public static void sound(ServerPlayer observer, net.minecraft.resources.ResourceLocation id, double x, double y, double z, float pitch, boolean success) {
+        if (!ServerPlayNetworking.canSend(observer, Sound.TYPE)) return;
+        ServerPlayNetworking.send(observer, new Sound(id.toString(), x, y, z, pitch, success));
+    }
 }

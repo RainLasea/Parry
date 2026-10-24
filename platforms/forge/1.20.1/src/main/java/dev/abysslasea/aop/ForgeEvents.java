@@ -9,6 +9,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public final class ForgeEvents {
     private ForgeEvents() {}
+    @SubscribeEvent public static void reload(net.minecraftforge.event.AddReloadListenerEvent event) {
+        event.addListener(new ParryItemRules.ReloadListener());
+    }
     @SubscribeEvent public static void damage(LivingAttackEvent event) {
         if (event.getEntity() instanceof ServerPlayer player && ParryEvents.incomingDamage(player, event.getSource(), event.getAmount())) event.setCanceled(true);
     }
@@ -24,5 +27,5 @@ public final class ForgeEvents {
     @SubscribeEvent public static void clonePlayer(PlayerEvent.Clone event) {
         if (event.getOriginal() instanceof ServerPlayer old && event.getEntity() instanceof ServerPlayer player) ParryEvents.copy(old, player, !event.isWasDeath());
     }
-    @SubscribeEvent public static void stop(ServerStoppedEvent event) { ParryEvents.clear(); }
+    @SubscribeEvent public static void stop(ServerStoppedEvent event) { ParryEvents.clear(); ParryItemRules.clear(); }
 }

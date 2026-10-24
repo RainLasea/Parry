@@ -5,6 +5,9 @@ import dev.abysslasea.aop.ParryNetwork;
 
 final class ParryClientNetwork {
     static void register() {
+        ClientPlayNetworking.registerGlobalReceiver(ParryNetwork.Sound.TYPE, (payload, context) ->
+                ParrySoundPlayer.play(payload.sound(), payload.x(), payload.y(), payload.z(), payload.pitch(), payload.success()));
+
         ClientPlayNetworking.registerGlobalReceiver(ParryNetwork.Check.TYPE, (payload, context) ->
                 ClientPlayNetworking.send(new ParryNetwork.Result(payload.requestId(), ParryView.canSee(payload.targetId()))));
         ClientPlayNetworking.registerGlobalReceiver(ParryNetwork.Cooldown.TYPE,

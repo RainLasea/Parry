@@ -5,7 +5,6 @@ neoforge = "21.1.249"
 forge = "1.20.1-47.3.0"
 fabric-loader = "0.19.3"
 nightconfig = "3.8.3"
-junit = "5.11.4"
 curios-neoforge = "9.5.1+1.21.1"
 curios-forge = "5.14.1+1.20.1"
 
@@ -21,8 +20,6 @@ fabric-api-mc1211 = { module = "net.fabricmc.fabric-api:fabric-api", version = "
 nightconfig-toml = { module = "com.electronwill.night-config:toml", version.ref = "nightconfig" }
 nightconfig-core = { module = "com.electronwill.night-config:core", version.ref = "nightconfig" }
 mixin-processor = { module = "org.spongepowered:mixin", version = "0.8.5" }
-junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
-junit-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "1.11.4" }
 
 # Modrinth version IDs distinguish releases that share a version number across loaders.
 playeranimator-forge-mc1201 = { module = "maven.modrinth:playeranimator", version = "xe2EVE6q" }

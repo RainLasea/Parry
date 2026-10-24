@@ -25,13 +25,16 @@ public final class ParryMod implements ModInitializer {
     public static final Supplier<SoundEvent> BLOCK_SOUND = () -> blockSound;
     public static final Supplier<SoundEvent> PARRY_SOUND = () -> parrySound;
     @Override public void onInitialize() {
+        ParryConfig.load();
         ironSpark = Registry.register(BuiltInRegistries.PARTICLE_TYPE, id("iron_spark"), FabricParticleTypes.simple());
         sparkFlash = Registry.register(BuiltInRegistries.PARTICLE_TYPE, id("spark_flash"), FabricParticleTypes.simple());
         blockSound = Registry.register(BuiltInRegistries.SOUND_EVENT, id("block"), SoundEvent.createVariableRangeEvent(id("block")));
         parrySound = Registry.register(BuiltInRegistries.SOUND_EVENT, id("parry_sound"), SoundEvent.createVariableRangeEvent(id("parry_sound")));
         ParryNetwork.register();
-        ServerLifecycleEvents.SERVER_STARTING.register(server -> { ParryEvents.clear(); ParryConfig.load(server); });
-        ServerLifecycleEvents.SERVER_STOPPED.register(server -> ParryEvents.clear());
+        net.fabricmc.fabric.api.resource.ResourceManagerHelper.get(net.minecraft.server.packs.PackType.SERVER_DATA)
+                .registerReloadListener(new FabricParryReloadListener());
+        ServerLifecycleEvents.SERVER_STARTING.register(server -> ParryEvents.clear());
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> { ParryEvents.clear(); ParryItemRules.clear(); });
         ServerTickEvents.END_SERVER_TICK.register(server -> ParryEvents.tick());
         ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) -> !(entity instanceof ServerPlayer player) || !ParryEvents.incomingDamage(player, source, amount));
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> ParryEvents.reset(handler.player));

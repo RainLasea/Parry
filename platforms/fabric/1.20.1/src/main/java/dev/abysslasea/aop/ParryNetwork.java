@@ -9,6 +9,7 @@ public final class ParryNetwork {
     public static final ResourceLocation ANIMATION = ParryMod.id("parry_animation");
     public static final ResourceLocation SUCCESS = ParryMod.id("parry_success");
     public static final ResourceLocation COOLDOWN = ParryMod.id("parry_cooldown");
+    public static final ResourceLocation SOUND = ParryMod.id("parry_sound");
     public static final ResourceLocation CHECK = ParryMod.id("parry_check");
     public static final ResourceLocation RESULT = ParryMod.id("parry_result");
     private ParryNetwork() {}
@@ -47,5 +48,12 @@ public final class ParryNetwork {
         buffer.writeVarInt(remainingTicks);
         buffer.writeVarInt(durationTicks);
         ServerPlayNetworking.send(player, COOLDOWN, buffer);
+    }
+    public static void sound(ServerPlayer observer, ResourceLocation id, double x, double y, double z, float pitch, boolean success) {
+        if (!ServerPlayNetworking.canSend(observer, SOUND)) return;
+        var buffer = PacketByteBufs.create();
+        buffer.writeUtf(id.toString()); buffer.writeDouble(x); buffer.writeDouble(y); buffer.writeDouble(z);
+        buffer.writeFloat(pitch); buffer.writeBoolean(success);
+        ServerPlayNetworking.send(observer, SOUND, buffer);
     }
 }

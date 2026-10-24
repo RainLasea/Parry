@@ -30,6 +30,12 @@ public final class ParryClient {
     private ParryClient() {}
 
     @SubscribeEvent
+    public static void sound(ParryNetwork.SoundEvent event) {
+        var sound = event.sound;
+        ParrySoundPlayer.play(sound.sound(), sound.x(), sound.y(), sound.z(), sound.pitch(), sound.success());
+    }
+
+    @SubscribeEvent
     public static void tick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         var minecraft = Minecraft.getInstance();

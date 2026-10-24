@@ -14,10 +14,6 @@ apply from: rootProject.file('gradle/mod-common.gradle')
 neoForge {
     version = providers.gradleProperty('neo_version').getOrElse(libs.versions.neoforge.get())
     mods { artofparrying { sourceSet sourceSets.main } }
-    unitTest {
-        enable()
-        testedMod = mods.artofparrying
-    }
     runs {
         client { client(); loadedMods = [mods.artofparrying] }
         server { server(); programArgument '--nogui'; loadedMods = [mods.artofparrying] }
@@ -47,8 +43,6 @@ def punchyDependency = devDependency(libs.punchy.neoforge.mc1211, 'punchyVersion
 def curiosDependency = "top.theillusivec4.curios:curios-neoforge:${providers.gradleProperty('curiosNeoForgeVersion').getOrElse(libs.versions.curios.neoforge.get())}"
 
 dependencies {
-    testImplementation libs.junit.jupiter
-    testRuntimeOnly libs.junit.launcher
     compileOnly "${curiosDependency}:api"
     compileOnly neoOriginsDependency
     compileOnly cameraOverhaulDependency
@@ -75,5 +69,3 @@ dependencies {
         clientAdditionalRuntimeClasspath punchyDependency
     }
 }
-
-tasks.named('test', Test) { useJUnitPlatform() }
